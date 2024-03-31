@@ -23,9 +23,10 @@ func NewSkinPostgres(db *sqlx.DB) *SkinPostgres {
 }
 
 func (r *SkinPostgres) CreateSkin(skin *entity.Skin) error {
-	query := fmt.Sprintf(`INSERT INTO %s (id, name, image, inspect_link, float, new, price, tradable) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) returning id`, skinsTable)
+	query := fmt.Sprintf(`INSERT INTO %s (id, name, image, inspect_link, float, new, price, tradable, url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning id`, skinsTable)
 
-	_, err := r.db.Exec(query, skin.Id, skin.Name, skin.Image, skin.InspectLink, skin.Float, true, skin.Price, skin.Tradable)
+	_, err := r.db.Exec(query, skin.Id, skin.Name, skin.Image, skin.InspectLink, skin.Float, true, skin.Price, skin.Tradable, skin.Url)
+
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key") {
 			skin.New = false

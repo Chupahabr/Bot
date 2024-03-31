@@ -13,6 +13,13 @@ type Skin struct {
 	New         bool   `json:"new" db:"new"`
 	Price       string `json:"sellPrice" db:"price"`
 	Tradable    bool   `json:"tradable" db:"tradable"`
+	Url         string `json:"url" db:"url"`
+	Stickers    []Sticker
+}
+
+type Sticker struct {
+	Name  string `json:"name" db:"name"`
+	Image string `json:"image" db:"image"`
 }
 
 func (u *Skin) Validate() error {

@@ -3,11 +3,9 @@ package app
 import (
 	"context"
 	"fmt"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"log"
 	"log/slog"
 	"net/http"
-	"skin-monkey/internal/service"
+	"skin-monkey/internal/lib/bot"
 	"time"
 )
 
@@ -23,7 +21,7 @@ func NewApp(log *slog.Logger) *App {
 	}
 }
 
-func (a *App) Run(handler http.Handler, port string, botService *service.BotService) error {
+func (a *App) Run(handler http.Handler, port string, bot *bot.BotStruct) error {
 	a.log.Info("Starting server")
 
 	a.HttpServer = &http.Server{
@@ -31,9 +29,12 @@ func (a *App) Run(handler http.Handler, port string, botService *service.BotServ
 		Handler: handler,
 	}
 
-	botService.SendText("Бот запущен")
+	err := bot.SendText("Бот запущен")
+	if err != nil {
+		return err
+	}
 
-	err := a.HttpServer.ListenAndServe()
+	err = a.HttpServer.ListenAndServe()
 	if err != nil {
 		return fmt.Errorf("%s: %w", "Failed to start server", err)
 	}
@@ -41,7 +42,7 @@ func (a *App) Run(handler http.Handler, port string, botService *service.BotServ
 	return nil
 }
 
-func (a *App) Stop() error {
+func (a *App) Stop(bot *bot.BotStruct) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -49,24 +50,19 @@ func (a *App) Stop() error {
 		a.log.Error("Graceful shutdown failed:", err)
 		return err
 	}
+	err := a.StopBot(bot)
+	if err != nil {
+		return err
+	}
 	a.log.Info("Server gracefully stopped")
 
 	return nil
 }
 
-func RunBot() *tgbotapi.BotAPI {
-	bot, err := tgbotapi.NewBotAPI("5931349262:AAHQGV4ivSuKsu8HvMEN05-v5qK7siduF4E")
+func (a *App) StopBot(bot *bot.BotStruct) error {
+	err := bot.SendText("Бот остановлен")
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
-	bot.Debug = true
-
-	log.Printf("Authorized on account %s", bot.Self.UserName)
-
-	return bot
-}
-
-func (a *App) StopBot(services *service.Service) error {
-	services.Bot.SendText("Бот остановлен")
 	return nil
 }

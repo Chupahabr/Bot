@@ -1,9 +1,9 @@
 package service
 
 import (
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
 	"skin-monkey/internal/entity"
+	"skin-monkey/internal/lib/bot"
 	"skin-monkey/internal/repository/postgres"
 )
 
@@ -15,19 +15,12 @@ type Skin interface {
 	GetSkinFilter() (*entity.Skin, error)
 }
 
-type Bot interface {
-	SendText(text string) error
-}
-
 type Service struct {
 	Skin
-	Bot
 }
 
-func NewService(repo *repository.Repository, log *slog.Logger, bot *tgbotapi.BotAPI) *Service {
-	BotService := NewBotService(bot, log)
+func NewService(repo *repository.Repository, log *slog.Logger, botStruct *bot.BotStruct) *Service {
 	return &Service{
-		Skin: NewSkinService(repo.Skin, log, BotService),
-		Bot:  *BotService,
+		Skin: NewSkinService(repo.Skin, log, botStruct),
 	}
 }

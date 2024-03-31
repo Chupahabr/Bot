@@ -9,6 +9,7 @@ import (
 	"skin-monkey/internal/app"
 	"skin-monkey/internal/config"
 	"skin-monkey/internal/handler"
+	"skin-monkey/internal/lib/bot"
 	"skin-monkey/internal/lib/logger"
 	repository "skin-monkey/internal/repository/postgres"
 	"skin-monkey/internal/service"
@@ -39,22 +40,28 @@ func main() {
 		panic(fmt.Sprintf("failed to connect to db: %s", err))
 	}
 
-	bot := app.RunBot()
+	bot := InitBot(log)
 
 	repo := repository.NewRepository(db)
 	services := service.NewService(repo, log, bot)
 	handlers := handler.NewHandler(services, log)
 	application := app.NewApp(log)
 
-	go application.Run(handlers.InitRoutes(), cfg.App.Port, services.Bot)
+	go application.Run(handlers.InitRoutes(), cfg.App.Port, bot)
 
 	stop := make(chan os.Signal)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 
 	<-stop
 
-	application.StopBot(services)
-	application.Stop()
+	err = application.Stop(bot)
+	if err != nil {
+		return
+	}
+}
+
+func InitBot(log *slog.Logger) *bot.BotStruct {
+	return bot.NewBot(log)
 }
 
 func initLogger() *slog.Logger {
@@ -63,8 +70,7 @@ func initLogger() *slog.Logger {
 			Level: slog.LevelDebug,
 		},
 	}
-	handler := logger.NewPrettyHandler(os.Stdout, opts)
-	log := slog.New(handler)
+	log := slog.New(logger.NewPrettyHandler(os.Stdout, opts))
 
 	return log
 }
