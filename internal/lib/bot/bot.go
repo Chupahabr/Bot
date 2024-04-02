@@ -26,12 +26,23 @@ func NewBot(log *slog.Logger) *BotStruct {
 	}
 }
 
+func (b BotStruct) Start() {
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+
+	updates := b.Bot.GetUpdatesChan(u)
+
+	for update := range updates {
+		if update.Message != nil {
+			fmt.Printf("[%s] %s \n chantId: %d \n", update.Message.From.UserName, update.Message.Text, update.Message.Chat.ID)
+		}
+	}
+}
+
 func (b BotStruct) SendText(text string) error {
 	// ruslan 693559920
 	// sanya 1064622908
-
-	//chatId1 := 693559920
-	//chatId2 := 1064622908
+	// pasha 850418238
 
 	msg := tgbotapi.NewMessage(693559920, text)
 	_, err := b.Bot.Send(msg)
@@ -40,6 +51,12 @@ func (b BotStruct) SendText(text string) error {
 	}
 
 	msg = tgbotapi.NewMessage(1064622908, text)
+	_, err = b.Bot.Send(msg)
+	if err != nil {
+		return err
+	}
+
+	msg = tgbotapi.NewMessage(850418238, text)
 	_, err = b.Bot.Send(msg)
 	if err != nil {
 		return err

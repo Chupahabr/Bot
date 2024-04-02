@@ -48,6 +48,7 @@ func main() {
 	application := app.NewApp(log)
 
 	go application.Run(handlers.InitRoutes(), cfg.App.Port, bot)
+	go bot.Start()
 
 	stop := make(chan os.Signal)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)

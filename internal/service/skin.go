@@ -61,9 +61,11 @@ func (s *SkinService) CreateSkin(skin *entity.Skin) error {
 
 		message := tgbotapi.NewMessage(693559920, messageText)
 		message2 := tgbotapi.NewMessage(1064622908, messageText)
+		message3 := tgbotapi.NewMessage(850418238, messageText)
 
 		message.ParseMode = "HTML"
 		message2.ParseMode = "HTML"
+		message3.ParseMode = "HTML"
 
 		_, err = s.bot.Bot.Send(message)
 		if err != nil {
@@ -71,6 +73,11 @@ func (s *SkinService) CreateSkin(skin *entity.Skin) error {
 		}
 
 		_, err = s.bot.Bot.Send(message2)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		_, err = s.bot.Bot.Send(message3)
 		if err != nil {
 			log.Fatal(err)
 		}
