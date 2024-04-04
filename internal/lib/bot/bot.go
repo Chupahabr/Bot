@@ -1,11 +1,18 @@
 package bot
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
+	"net/http"
 	"skin-monkey/internal/entity"
 	repository "skin-monkey/internal/repository/postgres"
+)
+
+const (
+	domainSkreenshot = "https://api.swap.gg/"
 )
 
 type BotStruct struct {
@@ -19,7 +26,6 @@ func NewBot(log *slog.Logger, token string, repo *repository.Repository) *BotStr
 	if err != nil {
 		panic(err)
 	}
-	botObject.Debug = true
 
 	fmt.Printf("Authorized on account %s", botObject.Self.UserName)
 
@@ -73,4 +79,51 @@ func (b BotStruct) SendText(text string) error {
 	}
 
 	return nil
+}
+
+type ResponseData struct {
+	Status string `json:"status"`
+	Result struct {
+		ImageID     string `json:"imageId"`
+		MarketName  string `json:"marketName"`
+		InspectLink string `json:"inspectLink"`
+		State       string `json:"state"`
+		Meta        struct {
+			Images []struct {
+				Slot int    `json:"slot"`
+				Name string `json:"name"`
+				Wear int    `json:"wear"`
+			} `json:"5"`
+		} `json:"meta"`
+	} `json:"result"`
+}
+
+func (b BotStruct) ScreenshotRequest(inspectLink string) (ResponseData, error) {
+	url := domainSkreenshot + "v2/screenshot"
+
+	data := map[string]string{
+		"inspectLink": inspectLink,
+	}
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println("Error marshalling JSON:", err)
+		return ResponseData{}, err
+	}
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		fmt.Println("Error making POST request:", err)
+		return ResponseData{}, err
+	}
+	defer resp.Body.Close()
+
+	var responseData ResponseData
+	err = json.NewDecoder(resp.Body).Decode(&responseData)
+	if err != nil {
+		fmt.Println("Error decoding JSON:", err)
+		return ResponseData{}, err
+	}
+
+	return responseData, nil
 }
