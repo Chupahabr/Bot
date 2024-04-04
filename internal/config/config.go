@@ -9,6 +9,7 @@ import (
 type Config struct {
 	App AppConfig
 	DB  DBConfig
+	Bot BotConfig
 }
 
 type AppConfig struct {
@@ -23,6 +24,10 @@ type DBConfig struct {
 	Password string
 	DBname   string
 	SSL      string
+}
+
+type BotConfig struct {
+	Token string
 }
 
 func MustLoadConfig() *Config {
@@ -41,6 +46,7 @@ func MustLoadConfig() *Config {
 	cfg.DB.Password = getEnv("DB_PASSWORD")
 	cfg.DB.DBname = getEnv("DB_NAME")
 	cfg.DB.SSL = getEnv("DB_SSL")
+	cfg.Bot.Token = getEnv("BOT_TOKEN")
 
 	if err = cleanenv.ReadEnv(&cfg); err != nil {
 		panic("failed to load config from environment: " + err.Error())

@@ -40,9 +40,10 @@ func main() {
 		panic(fmt.Sprintf("failed to connect to db: %s", err))
 	}
 
-	bot := InitBot(log)
-
 	repo := repository.NewRepository(db)
+
+	bot := InitBot(log, cfg.Bot.Token, repo)
+
 	services := service.NewService(repo, log, bot)
 	handlers := handler.NewHandler(services, log)
 	application := app.NewApp(log)
@@ -61,8 +62,8 @@ func main() {
 	}
 }
 
-func InitBot(log *slog.Logger) *bot.BotStruct {
-	return bot.NewBot(log)
+func InitBot(log *slog.Logger, botToken string, repo *repository.Repository) *bot.BotStruct {
+	return bot.NewBot(log, botToken, repo)
 }
 
 func initLogger() *slog.Logger {

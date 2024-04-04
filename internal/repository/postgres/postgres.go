@@ -8,6 +8,7 @@ import (
 
 const (
 	skinsTable = "skins"
+	usersTable = "users"
 )
 
 type Config struct {

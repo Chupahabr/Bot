@@ -4,15 +4,18 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
+	"skin-monkey/internal/entity"
+	repository "skin-monkey/internal/repository/postgres"
 )
 
 type BotStruct struct {
-	log *slog.Logger
-	Bot *tgbotapi.BotAPI
+	log  *slog.Logger
+	Bot  *tgbotapi.BotAPI
+	repo *repository.Repository
 }
 
-func NewBot(log *slog.Logger) *BotStruct {
-	botObject, err := tgbotapi.NewBotAPI("5931349262:AAHQGV4ivSuKsu8HvMEN05-v5qK7siduF4E")
+func NewBot(log *slog.Logger, token string, repo *repository.Repository) *BotStruct {
+	botObject, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		panic(err)
 	}
@@ -23,6 +26,7 @@ func NewBot(log *slog.Logger) *BotStruct {
 	return &BotStruct{
 		log,
 		botObject,
+		repo,
 	}
 }
 
@@ -34,32 +38,38 @@ func (b BotStruct) Start() {
 
 	for update := range updates {
 		if update.Message != nil {
+
+			user := entity.User{
+				Id:           update.Message.From.ID,
+				UserName:     update.Message.From.FirstName,
+				Name:         update.Message.From.UserName,
+				LanguageCode: update.Message.From.LanguageCode,
+				IsBot:        update.Message.From.IsBot,
+				DateAdd:      update.Message.Date,
+				Active:       false,
+			}
+
+			b.repo.User.CreateUser(&user)
+
 			fmt.Printf("[%s] %s \n chantId: %d \n", update.Message.From.UserName, update.Message.Text, update.Message.Chat.ID)
 		}
 	}
 }
 
 func (b BotStruct) SendText(text string) error {
-	// ruslan 693559920
-	// sanya 1064622908
-	// pasha 850418238
+	var users *[]entity.User
 
-	msg := tgbotapi.NewMessage(693559920, text)
-	_, err := b.Bot.Send(msg)
-	if err != nil {
-		return err
-	}
+	users, _ = b.repo.User.GetUsersFilter()
 
-	msg = tgbotapi.NewMessage(1064622908, text)
-	_, err = b.Bot.Send(msg)
-	if err != nil {
-		return err
-	}
+	for _, user := range *users {
+		msg := tgbotapi.NewMessage(user.Id, text)
 
-	msg = tgbotapi.NewMessage(850418238, text)
-	_, err = b.Bot.Send(msg)
-	if err != nil {
-		return err
+		msg.ParseMode = "HTML"
+
+		_, err := b.Bot.Send(msg)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

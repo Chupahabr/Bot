@@ -13,12 +13,20 @@ type Skin interface {
 	GetSkinsFilter() (*entity.Skin, error)
 }
 
+type User interface {
+	CreateUser(user *entity.User) error
+	GetUser(string) (*entity.User, error)
+	GetUsersFilter() (*[]entity.User, error)
+}
+
 type Repository struct {
 	Skin
+	User
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
 		Skin: NewSkinPostgres(db),
+		User: NewUserPostgres(db),
 	}
 }

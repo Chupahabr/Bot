@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"log"
 	"log/slog"
 	"skin-monkey/internal/entity"
 	"skin-monkey/internal/lib/bot"
@@ -48,39 +46,20 @@ func (s *SkinService) CreateSkin(skin *entity.Skin) error {
 		messageText := "Новый скин \n\n"
 
 		messageText += fmt.Sprintf("Название: %s \n", skin.Name)
+		messageText += fmt.Sprintf("Цена: <b>%s</b> руб \n\n", skin.Price)
 		messageText += fmt.Sprintf("<a href='%s'>Ссылка на скин</a> \n", skin.Url)
 		messageText += fmt.Sprintf("<a href='%s'>Изображение</a> \n", skin.Image)
-		//messageText += fmt.Sprintf("Ссылка на просмотр: %s \n", skin.InspectLink)
 		messageText += fmt.Sprintf("Можно выкупить: %s \n", tredable)
-		messageText += fmt.Sprintf("Цена: %s руб \n\n", skin.Price)
+		messageText += fmt.Sprintf("Флоат: %s \n\n", skin.Float)
 		//messageText += fmt.Sprintf("[Стикер](%s) \n", "https://steamcdn-a.akamaihd.net/apps/730/icons/econ/stickers/stockh2021/liq_holo.b3bc7d3028b8e7214ee07c1b143b3e62522fbe54.png")
 
 		for _, value := range skin.Stickers {
 			messageText += fmt.Sprintf("<a href='%s'>%s</a> \n", value.Image, value.Name)
 		}
 
-		message := tgbotapi.NewMessage(693559920, messageText)
-		message2 := tgbotapi.NewMessage(1064622908, messageText)
-		message3 := tgbotapi.NewMessage(850418238, messageText)
+		messageText += fmt.Sprintf("\nСсылка на просмотр: %s \n", skin.InspectLink)
 
-		message.ParseMode = "HTML"
-		message2.ParseMode = "HTML"
-		message3.ParseMode = "HTML"
-
-		_, err = s.bot.Bot.Send(message)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		_, err = s.bot.Bot.Send(message2)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		_, err = s.bot.Bot.Send(message3)
-		if err != nil {
-			log.Fatal(err)
-		}
+		s.bot.SendText(messageText)
 	}
 
 	return nil
