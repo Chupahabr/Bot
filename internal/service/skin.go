@@ -57,21 +57,28 @@ func (s *SkinService) CreateSkin(skin *entity.Skin) error {
 				break
 			}
 
-			if iteration >= 10 {
+			if iteration >= 25 {
 				break
 			}
 
 			iteration++
 		}
 
+		messageText := "Новый скин \n\n"
+
+		messageText += fmt.Sprintf("Название: %s \n", skin.Name)
+		messageText += fmt.Sprintf("Цена: <b>%s</b> руб \n\n", skin.Price)
+
 		var image string
 		if screenshotDataS.Status == "OK" {
 			image = domainImages + screenshotDataS.Result.ImageID + ".jpg"
 			if screenshotDataS.Result.State == "FAILED" {
-				image += " (Бракованное)"
+				messageText += fmt.Sprintf("<a href='%s'>Изображение</a> (Бракованное)\n", image)
+			} else {
+				messageText += fmt.Sprintf("<a href='%s'>Изображение</a>\n", image)
 			}
 		} else {
-			image = skin.Image + " (Дефолтное)"
+			messageText += fmt.Sprintf("<a href='%s'>Изображение</a> (Дефолтное)\n", image)
 		}
 
 		var tredable string
@@ -81,11 +88,6 @@ func (s *SkinService) CreateSkin(skin *entity.Skin) error {
 			tredable = "Нет"
 		}
 
-		messageText := "Новый скин \n\n"
-
-		messageText += fmt.Sprintf("Название: %s \n", skin.Name)
-		messageText += fmt.Sprintf("Цена: <b>%s</b> руб \n\n", skin.Price)
-		messageText += fmt.Sprintf("<a href='%s'>Изображение</a> \n", image)
 		messageText += fmt.Sprintf("<a href='%s'>Ссылка на скин</a> \n", skin.Url)
 		messageText += fmt.Sprintf("Можно выкупить: %s \n", tredable)
 		messageText += fmt.Sprintf("Флоат: %s \n\n", skin.Float)
