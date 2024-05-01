@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"skin-monkey/internal/lib/bot"
+	"skin-monkey/internal/lib/discordBot"
+	"skin-monkey/internal/lib/tgBot"
 	"time"
 )
 
@@ -21,7 +22,7 @@ func NewApp(log *slog.Logger) *App {
 	}
 }
 
-func (a *App) Run(handler http.Handler, port string, bot *bot.BotStruct) error {
+func (a *App) Run(handler http.Handler, port string, bot *tgBot.TgBotStruct) error {
 	a.log.Info("Starting server")
 
 	a.HttpServer = &http.Server{
@@ -42,7 +43,7 @@ func (a *App) Run(handler http.Handler, port string, bot *bot.BotStruct) error {
 	return nil
 }
 
-func (a *App) Stop(bot *bot.BotStruct) error {
+func (a *App) Stop(bot *tgBot.TgBotStruct, discordBot *discordBot.DiscordBotStruct) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -54,12 +55,14 @@ func (a *App) Stop(bot *bot.BotStruct) error {
 	if err != nil {
 		return err
 	}
+
+	discordBot.Stop()
 	a.log.Info("Server gracefully stopped")
 
 	return nil
 }
 
-func (a *App) StopBot(bot *bot.BotStruct) error {
+func (a *App) StopBot(bot *tgBot.TgBotStruct) error {
 	err := bot.SendText("Бот остановлен")
 	if err != nil {
 		return err

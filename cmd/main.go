@@ -9,8 +9,9 @@ import (
 	"skin-monkey/internal/app"
 	"skin-monkey/internal/config"
 	"skin-monkey/internal/handler"
-	"skin-monkey/internal/lib/bot"
+	"skin-monkey/internal/lib/discordBot"
 	"skin-monkey/internal/lib/logger"
+	"skin-monkey/internal/lib/tgBot"
 	repository "skin-monkey/internal/repository/postgres"
 	"skin-monkey/internal/service"
 	"syscall"
@@ -42,28 +43,34 @@ func main() {
 
 	repo := repository.NewRepository(db)
 
-	bot := InitBot(log, cfg.Bot.Token, repo)
+	tgBot := InitTgBot(log, cfg.TgBot.Token, repo)
+	discordBot := InitDiscordBot(log, cfg.DiscordBot.Token, cfg.DiscordBot.ChannelId)
 
-	services := service.NewService(repo, log, bot)
+	services := service.NewService(repo, log, tgBot, discordBot)
 	handlers := handler.NewHandler(services, log)
 	application := app.NewApp(log)
 
-	go application.Run(handlers.InitRoutes(), cfg.App.Port, bot)
-	go bot.Start()
+	go application.Run(handlers.InitRoutes(), cfg.App.Port, tgBot)
+	go tgBot.Start()
+	go discordBot.Start()
 
 	stop := make(chan os.Signal)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 
 	<-stop
 
-	err = application.Stop(bot)
+	err = application.Stop(tgBot, discordBot)
 	if err != nil {
 		return
 	}
 }
 
-func InitBot(log *slog.Logger, botToken string, repo *repository.Repository) *bot.BotStruct {
-	return bot.NewBot(log, botToken, repo)
+func InitTgBot(log *slog.Logger, botToken string, repo *repository.Repository) *tgBot.TgBotStruct {
+	return tgBot.NewBot(log, botToken, repo)
+}
+
+func InitDiscordBot(log *slog.Logger, botToken string, ChannelId string) *discordBot.DiscordBotStruct {
+	return discordBot.NewBot(log, botToken, ChannelId)
 }
 
 func initLogger() *slog.Logger {

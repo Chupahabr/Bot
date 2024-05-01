@@ -3,7 +3,8 @@ package service
 import (
 	"log/slog"
 	"skin-monkey/internal/entity"
-	"skin-monkey/internal/lib/bot"
+	"skin-monkey/internal/lib/discordBot"
+	"skin-monkey/internal/lib/tgBot"
 	"skin-monkey/internal/repository/postgres"
 )
 
@@ -19,8 +20,8 @@ type Service struct {
 	Skin
 }
 
-func NewService(repo *repository.Repository, log *slog.Logger, botStruct *bot.BotStruct) *Service {
+func NewService(repo *repository.Repository, log *slog.Logger, TgBotStruct *tgBot.TgBotStruct, DiscordBotStruct *discordBot.DiscordBotStruct) *Service {
 	return &Service{
-		Skin: NewSkinService(repo.Skin, log, botStruct),
+		Skin: NewSkinService(repo.Skin, log, TgBotStruct, DiscordBotStruct),
 	}
 }

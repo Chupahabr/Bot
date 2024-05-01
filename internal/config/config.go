@@ -7,9 +7,10 @@ import (
 )
 
 type Config struct {
-	App AppConfig
-	DB  DBConfig
-	Bot BotConfig
+	App        AppConfig
+	DB         DBConfig
+	TgBot      BotConfig
+	DiscordBot BotConfig
 }
 
 type AppConfig struct {
@@ -27,7 +28,8 @@ type DBConfig struct {
 }
 
 type BotConfig struct {
-	Token string
+	Token     string
+	ChannelId string
 }
 
 func MustLoadConfig() *Config {
@@ -46,7 +48,9 @@ func MustLoadConfig() *Config {
 	cfg.DB.Password = getEnv("DB_PASSWORD")
 	cfg.DB.DBname = getEnv("DB_NAME")
 	cfg.DB.SSL = getEnv("DB_SSL")
-	cfg.Bot.Token = getEnv("BOT_TOKEN")
+	cfg.TgBot.Token = getEnv("TG_BOT_TOKEN")
+	cfg.DiscordBot.Token = getEnv("DISCORD_BOT_TOKEN")
+	cfg.DiscordBot.ChannelId = getEnv("SEND_INSPECT_URL_CHANEL")
 
 	if err = cleanenv.ReadEnv(&cfg); err != nil {
 		panic("failed to load config from environment: " + err.Error())

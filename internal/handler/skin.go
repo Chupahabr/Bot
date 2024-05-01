@@ -28,9 +28,6 @@ func (h *Handler) addSkinsHandler(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusCreated, skin)
-	h.log.Info("add skin",
-		slog.Any("data", skin),
-	)
 }
 
 func (h *Handler) updateSkinHandler(c *gin.Context) {

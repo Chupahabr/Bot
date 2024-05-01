@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 	"skin-monkey/internal/entity"
-	"skin-monkey/internal/lib/bot"
+	"skin-monkey/internal/lib/discordBot"
+	"skin-monkey/internal/lib/tgBot"
 	repository "skin-monkey/internal/repository/postgres"
 	"strings"
 	"time"
@@ -19,14 +20,16 @@ const (
 type SkinService struct {
 	repository repository.Skin
 	log        *slog.Logger
-	bot        *bot.BotStruct
+	tgBot      *tgBot.TgBotStruct
+	discordBot *discordBot.DiscordBotStruct
 }
 
-func NewSkinService(repo repository.Skin, log *slog.Logger, botStruct *bot.BotStruct) *SkinService {
+func NewSkinService(repo repository.Skin, log *slog.Logger, TgBotStruct *tgBot.TgBotStruct, DiscordBotStruct *discordBot.DiscordBotStruct) *SkinService {
 	return &SkinService{
 		repository: repo,
 		log:        log,
-		bot:        botStruct,
+		tgBot:      TgBotStruct,
+		discordBot: DiscordBotStruct,
 	}
 }
 
@@ -42,43 +45,32 @@ func (s *SkinService) CreateSkin(skin *entity.Skin) error {
 
 	skinDb, _ := s.repository.GetSkin(skin.Id)
 	if skinDb.New {
+		message, _ := s.discordBot.Bot.ChannelMessageSend(s.discordBot.ChannelId, skin.InspectLink)
+
+		time.Sleep(10 * time.Second)
+
+		messages, _ := s.discordBot.Bot.ChannelMessages(s.discordBot.ChannelId, 100, "", "", message.ID)
+
+		var image string
+		if len(messages) != 0 {
+			image = messages[0].Content
+		}
+
 		inspectLink := strings.ReplaceAll(skin.InspectLink, "%20", " ")
 
-		var screenshotDataS bot.ResponseData
-		iteration := 0
-
-		for {
-			screenshotData, _ := s.bot.ScreenshotRequest(inspectLink)
-			screenshotDataS = screenshotData
-
-			if screenshotData.Result.State == "IN_QUEUE" {
-				time.Sleep(2 * time.Second)
-			} else {
-				break
-			}
-
-			if iteration >= 25 {
-				break
-			}
-
-			iteration++
-		}
+		var screenshotDataS tgBot.ResponseData
+		screenshotData, _ := s.tgBot.ScreenshotRequest(inspectLink)
+		screenshotDataS = screenshotData
 
 		messageText := "Новый скин \n\n"
 
 		messageText += fmt.Sprintf("Название: %s \n", skin.Name)
 		messageText += fmt.Sprintf("Цена: <b>%s</b> руб \n\n", skin.Price)
 
-		var image string
-		if screenshotDataS.Status == "OK" {
-			image = domainImages + screenshotDataS.Result.ImageID + ".jpg"
-			if screenshotDataS.Result.State == "FAILED" {
-				messageText += fmt.Sprintf("<a href='%s'>Изображение</a> (Бракованное)\n", image)
-			} else {
-				messageText += fmt.Sprintf("<a href='%s'>Изображение</a>\n", image)
-			}
+		if image != "" {
+			messageText += fmt.Sprintf("<a href='%s'>Изображение</a>\n", image)
 		} else {
-			messageText += fmt.Sprintf("<a href='%s'>Изображение</a> (Дефолтное)\n", image)
+			messageText += fmt.Sprintf("<a href='%s'>Изображение</a> (Дефолтное)\n", skin.Image)
 		}
 
 		var tredable string
@@ -105,7 +97,7 @@ func (s *SkinService) CreateSkin(skin *entity.Skin) error {
 
 		messageText += fmt.Sprintf("\nСсылка на просмотр: %s \n", skin.InspectLink)
 
-		err := s.bot.SendText(messageText)
+		err := s.tgBot.SendText(messageText)
 		if err != nil {
 			return err
 		}

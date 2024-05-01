@@ -1,4 +1,4 @@
-package bot
+package tgBot
 
 import (
 	"bytes"
@@ -15,13 +15,13 @@ const (
 	domainSkreenshot = "https://api.swap.gg/"
 )
 
-type BotStruct struct {
+type TgBotStruct struct {
 	log  *slog.Logger
 	Bot  *tgbotapi.BotAPI
 	repo *repository.Repository
 }
 
-func NewBot(log *slog.Logger, token string, repo *repository.Repository) *BotStruct {
+func NewBot(log *slog.Logger, token string, repo *repository.Repository) *TgBotStruct {
 	botObject, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		panic(err)
@@ -29,14 +29,14 @@ func NewBot(log *slog.Logger, token string, repo *repository.Repository) *BotStr
 
 	fmt.Printf("Authorized on account %s", botObject.Self.UserName)
 
-	return &BotStruct{
+	return &TgBotStruct{
 		log,
 		botObject,
 		repo,
 	}
 }
 
-func (b BotStruct) Start() {
+func (b TgBotStruct) Start() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
@@ -62,7 +62,7 @@ func (b BotStruct) Start() {
 	}
 }
 
-func (b BotStruct) SendText(text string) error {
+func (b TgBotStruct) SendText(text string) error {
 	var users *[]entity.User
 
 	users, _ = b.repo.User.GetUsersFilter()
@@ -98,7 +98,7 @@ type ResponseData struct {
 	} `json:"result"`
 }
 
-func (b BotStruct) ScreenshotRequest(inspectLink string) (ResponseData, error) {
+func (b TgBotStruct) ScreenshotRequest(inspectLink string) (ResponseData, error) {
 	url := domainSkreenshot + "v2/screenshot"
 
 	data := map[string]string{
