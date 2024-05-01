@@ -45,15 +45,18 @@ func (s *SkinService) CreateSkin(skin *entity.Skin) error {
 
 	skinDb, _ := s.repository.GetSkin(skin.Id)
 	if skinDb.New {
-		message, _ := s.discordBot.Bot.ChannelMessageSend(s.discordBot.ChannelId, skin.InspectLink)
-
-		time.Sleep(10 * time.Second)
-
-		messages, _ := s.discordBot.Bot.ChannelMessages(s.discordBot.ChannelId, 100, "", "", message.ID)
-
 		var image string
-		if len(messages) != 0 {
-			image = messages[0].Content
+
+		if skin.InspectLink != "" {
+			message, _ := s.discordBot.Bot.ChannelMessageSend(s.discordBot.ChannelId, skin.InspectLink)
+
+			time.Sleep(10 * time.Second)
+
+			messages, _ := s.discordBot.Bot.ChannelMessages(s.discordBot.ChannelId, 100, "", "", message.ID)
+
+			if len(messages) != 0 {
+				image = messages[0].Content
+			}
 		}
 
 		inspectLink := strings.ReplaceAll(skin.InspectLink, "%20", " ")
