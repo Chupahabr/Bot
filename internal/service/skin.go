@@ -52,10 +52,14 @@ func (s *SkinService) CreateSkin(skin *entity.Skin) error {
 
 			time.Sleep(10 * time.Second)
 
-			messages, _ := s.discordBot.Bot.ChannelMessages(s.discordBot.ChannelId, 100, "", "", message.ID)
+			messages, _ := s.discordBot.Bot.ChannelMessages(s.discordBot.ChannelId, 100, "", message.ID, message.ID)
 
 			if len(messages) != 0 {
-				image = messages[0].Content
+				for _, messageN := range messages {
+					if messageN.ReferencedMessage != nil && messageN.ReferencedMessage.ID == message.ID {
+						image = messageN.Content
+					}
+				}
 			}
 		}
 
