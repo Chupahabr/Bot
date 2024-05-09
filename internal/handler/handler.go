@@ -23,8 +23,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	router.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "https://aim.market/")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "*")
 		c.Writer.Header().Set("Access-Control-Max-Age", "86400") // Кеширование на 24 часа
 
 		if c.Request.Method == "OPTIONS" {
