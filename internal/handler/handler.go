@@ -21,6 +21,20 @@ func NewHandler(services *service.Service, log *slog.Logger) *Handler {
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
 
+	router.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "https://aim.market/")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Writer.Header().Set("Access-Control-Max-Age", "86400") // Кеширование на 24 часа
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(200)
+			return
+		}
+
+		c.Next()
+	})
+
 	api := router.Group("/api")
 	{
 		v1 := api.Group("/v1")
