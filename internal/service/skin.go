@@ -18,18 +18,20 @@ const (
 )
 
 type SkinService struct {
-	repository repository.Skin
-	log        *slog.Logger
-	tgBot      *tgBot.TgBotStruct
-	discordBot *discordBot.DiscordBotStruct
+	repositorySkin    repository.Skin
+	repositorySticker repository.Sticker
+	log               *slog.Logger
+	tgBot             *tgBot.TgBotStruct
+	discordBot        *discordBot.DiscordBotStruct
 }
 
-func NewSkinService(repo repository.Skin, log *slog.Logger, TgBotStruct *tgBot.TgBotStruct, DiscordBotStruct *discordBot.DiscordBotStruct) *SkinService {
+func NewSkinService(repoSkin repository.Skin, repoSticker repository.Sticker, log *slog.Logger, TgBotStruct *tgBot.TgBotStruct, DiscordBotStruct *discordBot.DiscordBotStruct) *SkinService {
 	return &SkinService{
-		repository: repo,
-		log:        log,
-		tgBot:      TgBotStruct,
-		discordBot: DiscordBotStruct,
+		repositorySkin:    repoSkin,
+		repositorySticker: repoSticker,
+		log:               log,
+		tgBot:             TgBotStruct,
+		discordBot:        DiscordBotStruct,
 	}
 }
 
@@ -38,12 +40,12 @@ func (s *SkinService) CreateSkin(skin *entity.Skin) error {
 		return err
 	}
 
-	err := s.repository.CreateSkin(skin)
+	err := s.repositorySkin.CreateSkin(skin)
 	if err != nil {
 		return err
 	}
 
-	skinDb, _ := s.repository.GetSkin(skin.Id)
+	skinDb, _ := s.repositorySkin.GetSkin(skin.Id)
 	if skinDb.New {
 		var image string
 
@@ -94,11 +96,21 @@ func (s *SkinService) CreateSkin(skin *entity.Skin) error {
 
 		if screenshotDataS.Status == "OK" {
 			for _, value := range screenshotDataS.Result.Meta.Images {
-				messageText += fmt.Sprintf("%s (Стето на %d%s. Позиция: %d) \n", value.Name, value.Wear, "%", value.Slot)
+				sticker, _ := s.repositorySticker.GetStickerByName("Sticker | " + value.Name)
+				if sticker != nil {
+					messageText += fmt.Sprintf("%s (Стето на %d%s. Позиция: %d) Цена стикера: <b>%s</b> \n", value.Name, value.Wear, "%", value.Slot, sticker.SellPriceText)
+				} else {
+					messageText += fmt.Sprintf("%s (Стето на %d%s. Позиция: %d) \n", value.Name, value.Wear, "%", value.Slot)
+				}
 			}
 		} else {
 			for _, value := range skin.Stickers {
-				messageText += fmt.Sprintf("<a href='%s'>%s</a> \n", value.Image, value.Name)
+				sticker, _ := s.repositorySticker.GetStickerByName(value.Name)
+				if sticker != nil {
+					messageText += fmt.Sprintf("<a href='%s'>%s</a> Цена стикера: <b>%s</b> \n", value.Image, value.Name, sticker.SellPriceText)
+				} else {
+					messageText += fmt.Sprintf("<a href='%s'>%s</a> \n", value.Image, value.Name)
+				}
 			}
 		}
 
@@ -114,7 +126,7 @@ func (s *SkinService) CreateSkin(skin *entity.Skin) error {
 }
 
 func (s *SkinService) GetSkin(id string) (*entity.Skin, error) {
-	return s.repository.GetSkin(id)
+	return s.repositorySkin.GetSkin(id)
 }
 
 func (s *SkinService) UpdateSkin(skin *entity.Skin) error {
@@ -130,7 +142,7 @@ func (s *SkinService) UpdateSkin(skin *entity.Skin) error {
 		return err
 	}
 
-	if err = s.repository.UpdateSkin(existingSkin); err != nil {
+	if err = s.repositorySkin.UpdateSkin(existingSkin); err != nil {
 		return err
 	}
 
@@ -147,9 +159,9 @@ func (s *SkinService) DeleteSkin(id string) error {
 		return err
 	}
 
-	return s.repository.DeleteSkin(id)
+	return s.repositorySkin.DeleteSkin(id)
 }
 
 func (s *SkinService) GetSkinFilter() (*entity.Skin, error) {
-	return s.repository.GetSkinsFilter()
+	return s.repositorySkin.GetSkinsFilter()
 }

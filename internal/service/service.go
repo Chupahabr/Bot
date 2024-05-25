@@ -22,6 +22,6 @@ type Service struct {
 
 func NewService(repo *repository.Repository, log *slog.Logger, TgBotStruct *tgBot.TgBotStruct, DiscordBotStruct *discordBot.DiscordBotStruct) *Service {
 	return &Service{
-		Skin: NewSkinService(repo.Skin, log, TgBotStruct, DiscordBotStruct),
+		Skin: NewSkinService(repo.Skin, repo.Sticker, log, TgBotStruct, DiscordBotStruct),
 	}
 }

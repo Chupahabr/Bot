@@ -19,14 +19,23 @@ type User interface {
 	GetUsersFilter() (*[]entity.User, error)
 }
 
+type Sticker interface {
+	CreateSticker(sticker *entity.Sticker) error
+	GetStickerById(id string) (*entity.Sticker, error)
+	GetStickerByName(name string) (*entity.Sticker, error)
+	UpdateSticker(sticker *entity.Sticker) error
+}
+
 type Repository struct {
 	Skin
 	User
+	Sticker
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
-		Skin: NewSkinPostgres(db),
-		User: NewUserPostgres(db),
+		Skin:    NewSkinPostgres(db),
+		User:    NewUserPostgres(db),
+		Sticker: NewStickerPostgres(db),
 	}
 }

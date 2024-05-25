@@ -9,6 +9,7 @@ import (
 	"skin-monkey/internal/app"
 	"skin-monkey/internal/config"
 	"skin-monkey/internal/handler"
+	"skin-monkey/internal/lib/cron"
 	"skin-monkey/internal/lib/discordBot"
 	"skin-monkey/internal/lib/logger"
 	"skin-monkey/internal/lib/tgBot"
@@ -45,6 +46,7 @@ func main() {
 
 	tgBot := InitTgBot(log, cfg.TgBot.Token, repo)
 	discordBot := InitDiscordBot(log, cfg.DiscordBot.Token, cfg.DiscordBot.ChannelId)
+	cron := InitCron(log, repo)
 
 	services := service.NewService(repo, log, tgBot, discordBot)
 	handlers := handler.NewHandler(services, log)
@@ -53,6 +55,7 @@ func main() {
 	go application.Run(handlers.InitRoutes(), cfg.App.Port, tgBot)
 	go tgBot.Start()
 	go discordBot.Start()
+	go cron.Start()
 
 	stop := make(chan os.Signal)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
@@ -82,4 +85,8 @@ func initLogger() *slog.Logger {
 	log := slog.New(logger.NewPrettyHandler(os.Stdout, opts))
 
 	return log
+}
+
+func InitCron(log *slog.Logger, repo *repository.Repository) *cron.Cron {
+	return cron.NewCron(log, repo)
 }
