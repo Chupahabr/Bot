@@ -2,6 +2,7 @@ package cron
 
 import (
 	"log/slog"
+	"skin-monkey/internal/lib/parser"
 	repository "skin-monkey/internal/repository/postgres"
 	"time"
 )
@@ -40,6 +41,6 @@ func (c *Cron) Start() {
 func (c *Cron) ParseStickers() {
 	c.log.Info("ParseStickers")
 
-	/*stickerParser := parser.NewStickerParser(c.log, c.repo)
-	stickerParser.Run()*/
+	stickerParser := parser.NewStickerParser(c.log, c.repo)
+	stickerParser.Run()
 }

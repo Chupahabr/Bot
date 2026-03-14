@@ -19,12 +19,13 @@ type AppConfig struct {
 }
 
 type DBConfig struct {
-	Host     string
-	Port     string
-	Username string
-	Password string
-	DBname   string
-	SSL      string
+	Host        string
+	HostEternal string
+	Port        string
+	Username    string
+	Password    string
+	DBname      string
+	SSL         string
 }
 
 type BotConfig struct {
@@ -43,6 +44,7 @@ func MustLoadConfig() *Config {
 	cfg.App.Port = getEnv("APP_PORT")
 	cfg.App.Env = getEnv("APP_ENV")
 	cfg.DB.Host = getEnv("DB_HOST")
+	cfg.DB.HostEternal = getEnv("DB_PORT_EXTERNAL")
 	cfg.DB.Port = getEnv("DB_PORT")
 	cfg.DB.Username = getEnv("DB_USER")
 	cfg.DB.Password = getEnv("DB_PASSWORD")

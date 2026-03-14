@@ -31,7 +31,7 @@ func main() {
 	gin.SetMode(cfg.App.Env)
 
 	db, err := repository.ConnectDb(repository.Config{
-		Host:     cfg.DB.Host,
+		Host:     cfg.DB.HostEternal,
 		Port:     cfg.DB.Port,
 		Username: cfg.DB.Username,
 		Password: cfg.DB.Password,
